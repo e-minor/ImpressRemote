@@ -7,7 +7,7 @@
 /*
  ----8<-----
 
- import ImpressRemote 1.0
+ import Helloworld 1.0
 
  Rectangle {
    width: 200

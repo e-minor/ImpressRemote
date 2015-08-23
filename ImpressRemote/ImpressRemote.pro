@@ -8,7 +8,7 @@ QML_FILES += $$files(*.qml,true) \
 
 CONF_FILES +=  ImpressRemote.apparmor \
                ImpressRemote.desktop \
-               ImpressRemote.png
+               $$files(*.png,true)
 
 AP_TEST_FILES += tests/autopilot/run \
                  $$files(tests/*.py,true)

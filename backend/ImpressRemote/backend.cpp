@@ -8,7 +8,7 @@ void BackendPlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(uri == QLatin1String("ImpressRemote"));
 
-    qmlRegisterType<MyType>(uri, 1, 0, "MyType");
+    qmlRegisterType<Impress>(uri, 1, 0, "Impress");
 }
 
 void BackendPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
