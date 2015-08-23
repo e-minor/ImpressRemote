@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ImpressRemote
+Exec=qmlscene $@ ImpressRemote/Main.qml
+Icon=ImpressRemote/ImpressRemote.png
+Terminal=false
+Type=Application
+X-Ubuntu-Touch=true
+

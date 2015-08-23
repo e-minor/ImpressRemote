@@ -1,0 +1,17 @@
+{
+    "name": "impressremote.e",
+    "description": "description of ImpressRemote",
+    "architecture": "@CLICK_ARCH@",
+    "title": "ImpressRemote",
+    "hooks": {
+        "ImpressRemote": {
+            "apparmor": "ImpressRemote/ImpressRemote.apparmor",
+            "desktop":  "ImpressRemote/ImpressRemote.desktop"
+        }
+    },
+    "version": "0.1",
+    "maintainer": "E Minor Team <xiongyihui3@gmail.com>",
+    "framework" : "ubuntu-sdk-15.04"
+}
+
+
