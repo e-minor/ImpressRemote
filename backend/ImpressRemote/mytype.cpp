@@ -16,7 +16,7 @@ Impress::Impress(QObject *parent) :
     curPage(0),
     m_message("")
 {
-    connect_server();
+    //connect_server();
 }
 
 Impress::~Impress() {
@@ -36,12 +36,13 @@ void Impress::readMsg()
 {
     char buff[1024];
     QString line;
+    int cnt;
 
     while(tcpSocket->canReadLine())
     {
         qDebug() << "canReadLine, bytes: " << tcpSocket->bytesAvailable();
 
-        tcpSocket->readLine(buff, 1024);
+        cnt = tcpSocket->readLine(buff, 1024);
 
         line = QString::fromUtf8(buff);
 
@@ -57,15 +58,15 @@ void Impress::readMsg()
         {
             emit paired();
 
-            // start();
+            start();
 
-            qDebug() << "print note 0";
-            qDebug() << getNote(0);
+            //qDebug() << "print note 0";
+            //qDebug() << getNote(0);
         }
         else if (line.indexOf("LO_SERVER_INFO") >= 0)
         {
             status = ST_READ_STARTED_OR_NOT;
-            tcpSocket->readLine(buff, 1024);
+            //tcpSocket->readLine(buff, 1024);
         }
         else if(line.indexOf("slideshow_started") >= 0)
         {
@@ -86,9 +87,21 @@ void Impress::readMsg()
             }
 
         }
-        else if (line.indexOf("slide_preview") >= 0 && 0)
+        else if(line.indexOf("slide_updated") >= 0)
         {
             tcpSocket->readLine(buff, 1024);
+            line = QString::fromUtf8(buff);
+            qint32 p = line.toInt();
+
+
+            emit pageUpdated(p);
+
+        }
+        else if (line.indexOf("slide_preview") >= 0)
+        {
+            status = ST_READ_PNG_PAGE;
+
+            /*tcpSocket->readLine(buff, 1024);
             line = QString::fromUtf8(buff);
             int pageNum = line.toInt();
 
@@ -111,18 +124,17 @@ void Impress::readMsg()
             QImage image;
             image.loadFromData(QByteArray::fromBase64(png_base64), "PNG");
             qDebug() << fn;
-            image.save(fn, "PNG");
+            image.save(fn, "PNG");*/
 
         }
-        else if (line.indexOf("slide_notes") >= 0 && 0)
+        else if (line.indexOf("slide_notes") >= 0)
         {
-            tcpSocket->readLine(buff, 1024);
+            status = ST_READ_NOTE_PAGE;
+            /*tcpSocket->readLine(buff, 1024);
             line = QString::fromUtf8(buff);
             qint32 pageNum = line.remove('\n').toInt();
             QString a = QString("notes_of_page_%1.txt").arg(pageNum);
             QFile file(getFilePath(a));
-            qDebug() << "file path: " << file.fileName();
-
             file.open(QIODevice::WriteOnly);
 
             do
@@ -132,7 +144,66 @@ void Impress::readMsg()
                 qDebug() << line;
                 file.write(buff, cnt);
             }while(line.indexOf('\n')<0);
-            file.close();
+            file.close();*/
+        }else
+        {
+            if (status == ST_READ_NOTE_PAGE)
+            {
+                //tcpSocket->readLine(buff, 1024);
+                //line = QString::fromUtf8(buff);
+                qint32 pageNum = line.remove('\n').toInt();
+                QString a = QString("notes_of_page_%1.txt").arg(pageNum);
+                m_file = new QFile(getFilePath(a));
+                m_file->open(QIODevice::WriteOnly);
+                status = ST_READ_NOTE;
+            }
+            else if (status == ST_READ_NOTE)
+            {
+                //int cnt = tcpSocket->readLine(buff, 1024);
+                //line = QString::fromUtf8(buff);
+                qDebug() << line;
+                m_file->write(buff, cnt);
+                if (line.indexOf('\n') >= 0)
+                {
+                    status = ST_IDLE;
+                    m_file->close();
+                }
+            }
+            else if(status == ST_READ_PNG_PAGE)
+            {
+
+                //tcpSocket->readLine(buff, 1024);
+                //line = QString::fromUtf8(buff);
+                int pageNum = line.toInt();
+
+                QString fn = QString("preview_of_page_%1.png").arg(pageNum);
+                m_pngFileName = getFilePath(fn);
+
+                png_base64 = new QByteArray();
+
+                status = ST_READ_PNG;
+            }
+            else if (status == ST_READ_PNG)
+            {
+                //int cnt = tcpSocket->readLine(buff, 1024);
+                //line = QString::fromUtf8(buff);
+                //png_base64 += line;
+                png_base64->append(buff, cnt);
+                if(line.indexOf('\n') >= 0)
+                {
+                    QByteArray ar = png_base64->left(png_base64->length()-1);
+
+                    QImage image;
+                    image.loadFromData(QByteArray::fromBase64(ar), "PNG");
+                    qDebug() << m_pngFileName;
+                    image.save(m_pngFileName, "PNG");
+
+                    status = ST_IDLE;
+
+                    delete png_base64;
+
+                }
+            }
         }
     }
 }
@@ -141,7 +212,6 @@ void Impress::sendMsg(QString msg)
 {
     QByteArray array (msg.toStdString().c_str());
     tcpSocket->write(array);
-    qDebug() << "send message: " << msg;
 }
 
 void Impress::connect_server()
@@ -184,6 +254,7 @@ void Impress::goto_page(int page)
 {
     sendMsg("goto_slide\n"+QString(page)+"\n\n");
 }
+
 
 QString Impress::getFilePath(const QString filename) const
 {

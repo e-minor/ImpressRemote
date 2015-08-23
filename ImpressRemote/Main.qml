@@ -43,8 +43,13 @@ MainView {
             }
 
             onReportPageNumberGot: {
-                note_title.text = "Note " + cur
-                // note.text = impress.getNote(cur)
+                //note_title.text = "Note " + cur
+                note.text = impress.getNote(cur)
+            }
+
+            onPageUpdated: {
+                note.text = impress.getNote(page)
+                note_title.text = "Page " + page
             }
         }
 
@@ -154,7 +159,7 @@ MainView {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        note_title.text = "prev"
+                        //note_title.text = "prev"
                         console.debug("prev page")
                         impress.prev_page()
                     }
@@ -179,7 +184,7 @@ MainView {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        note_title.text = "next"
+                        //note_title.text = "next"
                         console.debug("next page")
                         impress.next_page()
                     }

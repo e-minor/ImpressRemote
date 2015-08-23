@@ -3,8 +3,9 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QFile>
 
-enum{ST_IDLE, ST_READ_STARTED_OR_NOT, ST_xxx};
+enum{ST_IDLE, ST_READ_STARTED_OR_NOT, ST_READ_NOTE_PAGE, ST_READ_NOTE, ST_READ_PNG_PAGE, ST_READ_PNG};
 
 class Impress : public QObject
 {
@@ -27,6 +28,7 @@ signals:
     void paired();
     void reportStartupStatus(bool started);
     void reportPageNumberGot(qint32 total, qint32 cur);
+    void pageUpdated(qint32 page);
 
 public slots:
     void connect_server();
@@ -75,6 +77,9 @@ protected:
     int status;
     int totalPages;
     int curPage;
+    QFile *m_file;
+    QString m_pngFileName;
+    QByteArray *png_base64;
 };
 
 #endif // MYTYPE_H
